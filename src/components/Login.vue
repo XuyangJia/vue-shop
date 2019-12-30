@@ -4,7 +4,7 @@
       <div class="avatar-box">
         <img src="../assets/logo.png">
       </div>
-      <el-form ref="form" :rules="loginFormRules" :model="loginForm" label-width="0px" class="login-form">
+      <el-form ref="loginFormRef" :rules="loginFormRules" :model="loginForm" label-width="0px" class="login-form">
         <el-form-item prop="username">
           <el-input v-model="loginForm.username" prefix-icon="iconfont icon-user"></el-input>
         </el-form-item>
@@ -12,8 +12,8 @@
           <el-input v-model="loginForm.password" show-password prefix-icon="iconfont icon-3702mima"></el-input>
         </el-form-item>
         <el-form-item class="btns">
-          <el-button type="primary" @click="onSubmit">登录</el-button>
-          <el-button type="info" @click="onSubmit">重置</el-button>
+          <el-button type="primary" @click="login('loginFormRef')">登录</el-button>
+          <el-button type="info" @click="resetForm('loginFormRef')">重置</el-button>
         </el-form-item>
       </el-form>
     </div>
@@ -25,8 +25,8 @@ export default {
   data () {
     return {
       loginForm: {
-        username: '',
-        password: ''
+        username: 'admin',
+        password: '123456'
       },
       loginFormRules: {
         username: [
@@ -38,6 +38,22 @@ export default {
           { min: 3, max: 10, message: '长度在 6 到 20 个字符', trigger: 'blur' }
         ]
       }
+    }
+  },
+  methods: {
+    login (formName) {
+      this.$refs[formName].validate(async valid => {
+        if (!valid) return
+        const { data: res } = await this.axios.post('login', this.loginForm)
+        if (res.meta.status !== 200) return this.$message.error(res.meta.msg)
+        this.$message.success(res.meta.msg)
+        window.sessionStorage.setItem('token', res.data.token)
+        this.$router.push('/home')
+        console.log(res)
+      })
+    },
+    resetForm (formName) {
+      this.$refs[formName].resetFields()
     }
   }
 }
